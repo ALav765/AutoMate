@@ -206,6 +206,7 @@ async def _run_add_check(job_id, check, output_file_path):
 
     try:
         from claude_agent import ClaudeAgent
+        from check_inserter import insert_and_validate_check
         from pathlib import Path as _P
         engine_path = _P(__file__).parent / "checklist_engine.py"
 
@@ -218,9 +219,9 @@ async def _run_add_check(job_id, check, output_file_path):
         )
         check["check_num"] = check_num
 
-        # TODO: actually splice `code` into checklist_engine.py at the right spot.
-        # Stubbed here — agent.write_new_check currently just returns code text.
-        emit({"type": "claude", "message": f"Generated code for check #{check_num} (not yet auto-inserted)"})
+        success, message = insert_and_validate_check(code, check_num, push_event=emit)
+        if not success:
+            raise RuntimeError(message)
 
         await pool.execute(
             """INSERT INTO checks (check_num, label, description, threshold, fail_type)
@@ -233,3 +234,4 @@ async def _run_add_check(job_id, check, output_file_path):
     except Exception as e:
         emit({"type": "error", "message": str(e)})
         await finalize_job(job_id, "error")
+
