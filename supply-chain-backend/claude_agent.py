@@ -60,7 +60,7 @@ Rules:
 
     def write_new_check(self, description, threshold, fail_type, engine_source):
         existing_nums = re.findall(r"results\[(\d+)\]", engine_source)
-        next_num = max(int(n) for n in existing_nums) + 1 if existing_nums else 16
+        next_num = max(int(n) for n in existing_nums) + 1 if existing_nums else 2
 
         prompt = f"""You are adding a new check to a supply chain planning checklist engine.
 
@@ -92,3 +92,4 @@ Return ONLY the Python code block to insert, no markdown fences.
 
         self.emit({"type": "claude", "message": f"Check #{next_num} written"})
         return code, next_num
+
